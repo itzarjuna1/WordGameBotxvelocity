@@ -38,7 +38,7 @@ async def start(client: Client, message: Message):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("+ Add Me +", url="https://t.me/WordNWordRobot?startgroup=true"),
+                        InlineKeyboardButton("+ Add Me +", url="https://t.me/Velocityxrobot?startgroup=true"),
                     ]
                 ]
             )
