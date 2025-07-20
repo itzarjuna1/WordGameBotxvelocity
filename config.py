@@ -3,9 +3,9 @@
 import os
 
 # ✅ Required: Telegram API credentials
-API_ID = int(os.getenv("API_ID", "YOUR_API_ID_HERE"))  # replace with your API_ID
-API_HASH = os.getenv("API_HASH", "YOUR_API_HASH_HERE")  # replace with your API_HASH
-BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")  # replace with your BOT_TOKEN
+API_ID = int(os.getenv("API_ID", "YOUR_API_ID_HERE", "24472937"))  # replace with your API_ID
+API_HASH = os.getenv("API_HASH", "YOUR_API_HASH_HERE", "da038362f56272bae92f22ece39e73e1")  # replace with your API_HASH
+BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE", "7564541101:AAGeeiFMZEh1irUh7d8sl68XsuAG29fzoKE")  # replace with your BOT_TOKEN
 
 # 🔧 Optional: proxy settings (if needed)
 # Use these if your network requires a proxy
