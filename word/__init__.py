@@ -20,16 +20,16 @@ LOGGER = logging.getLogger(__name__)
 
 TOKEN = os.getenv("TOKEN","7564541101:AAGeeiFMZEh1irUh7d8sl68XsuAG29fzoKE")
 mongo_url = os.getenv("MONGO_URL","mongodb+srv://knight4563:knight4563@cluster0.a5br0se.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-API_HASH = os.getenv("API_HASH","da038362f56272bae92f22ece39e73e1")
-API_ID = os.getenv("API_ID","24472937")
+API_HASH = os.getenv("API_HASH","38afc27040dbf5e29ccb9abdf8eb62c4")
+API_ID = os.getenv("API_ID","25089247")
 if not TOKEN or not mongo_url or not API_HASH or not API_ID:
     raise ValueError("Please set the environment variables: TOKEN, MONGO_URL, API_HASH, and API_ID.")
 
 
 word = Client(
     "lol",
-    api_id="24472937",
-    api_hash="da038362f56272bae92f22ece39e73e1",
+    api_id="25089247",
+    api_hash="38afc27040dbf5e29ccb9abdf8eb62c4",
     bot_token="7564541101:AAGeeiFMZEh1irUh7d8sl68XsuAG29fzoKE",
     plugins=dict(root="word"),
 )
