@@ -18,7 +18,7 @@ logging.getLogger("pyrate_limiter").setLevel(logging.ERROR)
 LOGGER = logging.getLogger(__name__)
 
 
-TOKEN = os.getenv("TOKEN","7564541101:AAEffMGDfJv2dEqlPygo4nLJ4UZwnugJmoY")
+TOKEN = os.getenv("TOKEN","7564541101:AAEkurv1ktX8K7WqxVKQtNCI5YWmg6h9RHs")
 mongo_url = os.getenv("MONGO_URL","mongodb+srv://knight4563:knight4563@cluster0.a5br0se.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 API_HASH = os.getenv("API_HASH","38afc27040dbf5e29ccb9abdf8eb62c4")
 API_ID = os.getenv("API_ID","25089247")
@@ -30,7 +30,7 @@ word = Client(
     "lol",
     api_id="25089247",
     api_hash="38afc27040dbf5e29ccb9abdf8eb62c4",
-    bot_token="7564541101:AAEffMGDfJv2dEqlPygo4nLJ4UZwnugJmoY",
+    bot_token="7564541101:AAEkurv1ktX8K7WqxVKQtNCI5YWmg6h9RHs",
     plugins=dict(root="word"),
 )
 
