@@ -28,9 +28,9 @@ if not TOKEN or not mongo_url or not API_HASH or not API_ID:
 
 word = Client(
     "lol",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=TOKEN,
+    api_id=24472937,
+    api_hash=da038362f56272bae92f22ece39e73e1,
+    bot_token=7564541101:AAGeeiFMZEh1irUh7d8sl68XsuAG29fzoKE,
     plugins=dict(root="word"),
 )
 
