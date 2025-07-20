@@ -1,14 +1,20 @@
+# game.py
+
 import asyncio
-from pyrogram import filters
-from pyrogram.types import Message
-from word import word
-from word import WORD_SET
-from word.database.db import update_stats, get_stats
 from datetime import datetime, timedelta
 import random
 
+from pyrogram import filters
+from pyrogram.types import Message
+
+from word import word, WORD_SET
+from word.database.db import update_stats, get_stats
+
 active_games = {}
 pending_games = {}
+
+INACTIVE_TIMEOUT = 180  # 3 minutes
+
 
 class Game:
     def __init__(self, chat_id):
@@ -23,37 +29,27 @@ class Game:
         self.word_length = 3
         self.word_count = 0
         self.consecutive_count = 0
+        self.created_at = datetime.utcnow()
 
-    async def start_countdown(self, delay=60):
-        delays = [60, 30, 15, 10]
-        for delay in delays:
+    async def auto_cleanup(self):
+        await asyncio.sleep(INACTIVE_TIMEOUT)
+        if self.chat_id in pending_games and not self.start_time:
+            await word.send_message(self.chat_id, "⚠️ Game expired due to inactivity.")
+            del pending_games[self.chat_id]
+
+    async def start_countdown(self):
+        asyncio.create_task(self.auto_cleanup())
+
+        for delay in [60, 30, 15, 10]:
             if self.chat_id in active_games:
                 return
 
-            if delay == 60:
-                await word.send_message(
-                    self.chat_id,
-                    "The classic game is starting in 1 minute - join now!\n\nRules:\n"
-                    "- 45s per word\n"
-                    "- Start with 3-letter words\n"
-                    "- Every 4 words reduce time by 10s\n"
-                    "- Every 2 words increase length by 1"
-                )
-            else:
-                await word.send_message(self.chat_id, f"Starting game in {delay} seconds...")
-
-            try:
-                index = delays.index(delay)
-                if delay == 60:
-                    sleep_time = delay
-                elif index + 1 < len(delays):
-                    sleep_time = delays[index + 1]
-                else:
-                    sleep_time = delay
-                await asyncio.sleep(sleep_time)
-            except (ValueError, IndexError) as e:
-                print(f"[!] Delay error: {e}")
-                await asyncio.sleep(delay)
+            await word.send_message(
+                self.chat_id,
+                f"Starting game in {delay} seconds..." if delay != 60 else
+                "🕹️ Game starting in 1 minute! Join now with /join\n\nRules:\n- 45s per turn\n- Word must begin with last letter\n- Every 2 words: +1 letter\n- Every 4 words: -10s"
+            )
+            await asyncio.sleep(delay)
 
         if self.chat_id in active_games:
             return
@@ -61,42 +57,40 @@ class Game:
         if len(self.players) >= 2:
             await self.start_game()
         else:
-            await word.send_message(self.chat_id, "Not enough players to start the game!")
-            del pending_games[self.chat_id]
+            await word.send_message(self.chat_id, "⚠️ Not enough players to start.")
+            pending_games.pop(self.chat_id, None)
 
     async def start_game(self):
-        self.start_time = datetime.now()
+        self.start_time = datetime.utcnow()
         active_games[self.chat_id] = self
-        del pending_games[self.chat_id]
+        pending_games.pop(self.chat_id, None)
+
         self.current_word = random.choice('abcdefghijklmnopqrstuvwxyz').upper()
         turn_order = "\n".join([f"• {p['mention']}" for p in self.players])
         await word.send_message(
             self.chat_id,
-            f"Game Started!\n\nFirst letter: **{self.current_word}**\nTurn order:\n{turn_order}"
+            f"✅ Game Started!\n\n🔤 First letter: **{self.current_word}**\n🔁 Turn order:\n{turn_order}"
         )
         await self.next_turn()
 
     async def next_turn(self):
         if self.chat_id not in active_games:
             return
+
         if not self.players:
-            await word.send_message(self.chat_id, "No players left! Ending game.")
-            del active_games[self.chat_id]
+            await word.send_message(self.chat_id, "❌ No players left. Ending game.")
+            active_games.pop(self.chat_id, None)
             return
+
         if self.time_left <= 0:
             return await self.handle_timeout()
 
         player = self.players[self.turn_index]
-        cache_total_players = {p['id']: p['mention'] for p in self.players}
-
         await word.send_message(
             self.chat_id,
-            f"Turn: {player['mention']} (Next: {self.players[(self.turn_index + 1) % len(self.players)]['mention']})\n"
-            f"Your word must start with **{self.current_word[-1].upper()}**\n"
-            f"Minimum length: {self.word_length} letters\n"
-            f"Time left: {self.time_left}s\n"
-            f"Players: {len(self.players)}/{len(cache_total_players)}\n"
-            f"Total words: {self.word_count}"
+            f"🎯 {player['mention']}'s turn\n"
+            f"Start with: **{self.current_word[-1].upper()}**\n"
+            f"Min length: {self.word_length} | Time: {self.time_left}s\n"
         )
 
         try:
@@ -105,22 +99,26 @@ class Game:
                 timeout=self.time_left
             )
             await self.validate_word(answer)
-        except:
+        except asyncio.TimeoutError:
             await self.handle_timeout()
 
     async def validate_word(self, msg: Message):
-        wordd = msg.text.lower().strip()
-        if wordd and not wordd.startswith(self.current_word[-1].lower()):
-            await msg.reply(f"{wordd} does not start with **{self.current_word[-1].upper()}**!")
+        wordd = msg.text.strip().lower()
+
+        if not wordd.startswith(self.current_word[-1]):
+            await msg.reply(f"❌ Must start with **{self.current_word[-1].upper()}**")
             return await self.next_turn()
+
         if len(wordd) < self.word_length:
-            await msg.reply(f"{wordd} has less than {self.word_length} letters.")
+            await msg.reply(f"❌ Too short! Needs {self.word_length}+ letters.")
             return await self.next_turn()
+
         if wordd not in WORD_SET:
-            await msg.reply(f"{wordd} is not in my list of words!")
+            await msg.reply("❌ Word not in dictionary.")
             return await self.next_turn()
+
         if wordd in self.used_words:
-            await msg.reply(f"{wordd} has been used!")
+            await msg.reply("❌ Already used!")
             return await self.next_turn()
 
         self.used_words.add(wordd)
@@ -129,7 +127,7 @@ class Game:
         self.consecutive_count += 1
 
         if self.consecutive_count % 4 == 0:
-            self.time_left = max(15, self.time_left - 10)
+            self.time_left = max(10, self.time_left - 10)
         if self.consecutive_count % 2 == 0:
             self.word_length += 1
 
@@ -137,99 +135,32 @@ class Game:
         await update_stats(msg.from_user.id, "total_letters", len(wordd))
 
         self.turn_index = (self.turn_index + 1) % len(self.players)
-        await word.send_message(self.chat_id, f"__{wordd.capitalize()}__ accepted!")
+        await word.send_message(self.chat_id, f"✅ **{wordd}** accepted!")
         await self.next_turn()
 
     async def handle_timeout(self):
         player = self.players.pop(self.turn_index)
-        await word.send_message(self.chat_id, f"{player['mention']} ran out of time! Eliminated!")
+        await word.send_message(self.chat_id, f"⏱️ {player['mention']} ran out of time and is eliminated.")
 
         if len(self.players) == 1:
             winner = self.players[0]
-            duration = datetime.now() - self.start_time
-            formatted_duration = str(timedelta(seconds=int(duration.total_seconds())))
+            duration = datetime.utcnow() - self.start_time
             longest = max(self.used_words, key=len) if self.used_words else "N/A"
 
             await word.send_message(
                 self.chat_id,
-                f"🏆 {winner['mention']} won!\n"
-                f"Total words: {self.word_count}\n"
-                f"Longest word: {longest} ({len(longest)} letters)\n"
-                f"Duration: {formatted_duration}\n"
+                f"🏆 Winner: {winner['mention']}\nTotal words: {self.word_count}\nLongest: {longest}\nTime: {str(duration).split('.')[0]}"
             )
 
             await update_stats(winner['id'], "games_won", 1)
-            for player in self.players:
-                await update_stats(player['id'], "games_played", 1)
+            for p in self.players:
+                await update_stats(p['id'], "games_played", 1)
 
-            if longest:
-                stats = await get_stats(winner['id'])
-                prev_longest = stats.get('longest_word', '')
-                if len(longest) > len(prev_longest):
-                    await update_stats(winner['id'], "longest_word", longest)
+            prev_stats = await get_stats(winner['id'])
+            if longest and len(longest) > len(prev_stats.get("longest_word", "")):
+                await update_stats(winner['id'], "longest_word", longest)
 
-            del active_games[self.chat_id]
+            active_games.pop(self.chat_id, None)
         else:
             self.turn_index %= len(self.players)
             await self.next_turn()
-
-@word.on_message(filters.command("startclassic") & filters.group)
-async def start_classic(client, message: Message):
-    chat_id = message.chat.id
-    if chat_id in pending_games:
-        return await message.reply("A game is already pending!")
-
-    game = Game(chat_id)
-    pending_games[chat_id] = game
-    game.starter = message.from_user.id
-    await message.reply("Classic game started! Type /join to participate!")
-    asyncio.create_task(game.start_countdown())
-
-    game.players.append({
-        'id': message.from_user.id,
-        'mention': message.from_user.mention
-    })
-    await message.reply(f"{message.from_user.mention} joined the game!")
-
-@word.on_message(filters.command("join") & filters.group)
-async def join_game(client, message: Message):
-    chat_id = message.chat.id
-    if chat_id not in pending_games:
-        return await message.reply("No pending game to join!")
-
-    game = pending_games[chat_id]
-    if any(p['id'] == message.from_user.id for p in game.players):
-        return await message.reply("You're already in the game!")
-
-    game.players.append({
-        'id': message.from_user.id,
-        'mention': message.from_user.mention
-    })
-    await message.reply(f"{message.from_user.mention} joined the game!")
-
-@word.on_message(filters.command("flee") & filters.group)
-async def flee_game(client, message: Message):
-    chat_id = message.chat.id
-    if chat_id not in pending_games:
-        return await message.reply("No pending game to leave!")
-
-    game = pending_games[chat_id]
-    game.players = [p for p in game.players if p['id'] != message.from_user.id]
-    await message.reply("You left the game!")
-
-@word.on_message(filters.command("extend") & filters.group)
-async def extend_game(client, message: Message):
-    chat_id = message.chat.id
-    if chat_id not in pending_games:
-        return await message.reply("No active game to extend!")
-
-    game = pending_games[chat_id]
-    await game.start_countdown(30)
-    await message.reply(f"Game start extended by 30 seconds!\n\nNew start time: {game.start_time + timedelta(seconds=30)}")
-
-@word.on_message(filters.command("stats"))
-async def show_stats(client, message: Message):
-    stats = await get_stats(message.from_user.id)
-
-    games_played = stats.get('games_played', 0)
-    games_won = stats.get('games_won', 0)
