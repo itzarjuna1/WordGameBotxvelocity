@@ -10,9 +10,6 @@ Play exciting word chain games with your friends in Telegram groups.
 Add me to a group and type `/start` to begin the fun!
 """
 
-Add me to a group to start playing!
-"""
-
 @word.on_message(filters.command(["start", "help"]))
 async def start(client: Client, message: Message):
     user_id = message.from_user.id
