@@ -30,7 +30,7 @@ word = Client(
     "lol",
     api_id=24472937,
     api_hash=da038362f56272bae92f22ece39e73e1,
-    bot_token=7564541101:AAGeeiFMZEh1irUh7d8sl68XsuAG29fzoKE,
+    bot_token="7564541101:AAGeeiFMZEh1irUh7d8sl68XsuAG29fzoKE",
     plugins=dict(root="word"),
 )
 
