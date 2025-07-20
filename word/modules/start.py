@@ -22,7 +22,7 @@ async def start(client: Client, message: Message):
         if not await get_group(message.chat.id):
             await add_group(message.chat.id, message.chat.title)
         await message.reply_photo(
-            photo="https://i.ibb.co/XktTk8f2/145d93c11b4e.jpg",
+            photo="https://graph.org/file/046efb7c1411d26be3145-a751e2c61b39111484.jpg",
             caption=START_TEXT.format(
                 user=message.from_user.mention,
                 bot=(await client.get_me()).first_name
@@ -30,7 +30,7 @@ async def start(client: Client, message: Message):
         )
     else:
         await message.reply_photo(
-            photo="https://i.ibb.co/XktTk8f2/145d93c11b4e.jpg",
+            photo="https://graph.org/file/046efb7c1411d26be3145-a751e2c61b39111484.jpg",
             caption=START_TEXT.format(
                 user=message.from_user.mention,
                 bot=(await client.get_me()).first_name
