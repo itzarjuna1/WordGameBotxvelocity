@@ -36,6 +36,7 @@ class Game:
                 await word.send_message(self.chat_id, "The classic game is starting in 1 minute - join now!\n\nRules:\n- 45s per word\n- Start with 3-letter words\n- Every 4 words reduce time by 10s\n- Every 2 words increase length by 1")
             else:
                 await word.send_message(self.chat_id, f"Starting game in {delay} seconds...")
+           # await asyncio.sleep(delay if delay == 60 else delays[delays.index(delay) - delays[delays.index(delay)+1]] if delays.index(delay)+1 < len(delays) else delay)
             index = delays.index(delay)
     if delay == 60:
         sleep_time = delay
