@@ -48,10 +48,10 @@ async def start(client: Client, message: Message):
                 [
                     [InlineKeyboardButton("➕ Add Me To Group", url="https://t.me/Velocityxrobot?startgroup=true")],
                     [
-                        InlineKeyboardButton("👥 Group", url="https://t.me/YourGroupUsername"),
-                        InlineKeyboardButton("🔄 Updates", url="https://t.me/YourUpdateChannel"),
+                        InlineKeyboardButton("👥 Group", url="https://t.me/+5vPKU47S6HNiNjY1"),
+                        InlineKeyboardButton("🔄 Updates", url="https://t.me/Who_Cares_qt"),
                     ],
-                    [InlineKeyboardButton("🧑‍💼 Owner", url="https://t.me/YourUsername")]
+                    [InlineKeyboardButton("ɢx ᴅᴀʀᴋ ʙᴏᴛs [🇮🇳]", url="https://t.me/dark_x_knight_musiczz_support")]
                 ]
             )
         )
