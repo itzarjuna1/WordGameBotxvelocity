@@ -18,18 +18,18 @@ logging.getLogger("pyrate_limiter").setLevel(logging.ERROR)
 LOGGER = logging.getLogger(__name__)
 
 
-TOKEN = os.getenv("TOKEN","sdk_78364:AAH2b1a3-7d8f-4c5b-9e0c-6f8e2a3b4c5d")
-mongo_url = os.getenv("MONGO_URL","sdk://localhost:27017/WordNWord")
-API_HASH = os.getenv("API_HASH","sdk_1234567890abcdef1234567890abcdef")
-API_ID = os.getenv("API_ID","sdk_123456")
+TOKEN = os.getenv("TOKEN","7564541101:AAGeeiFMZEh1irUh7d8sl68XsuAG29fzoKE")
+mongo_url = os.getenv("MONGO_URL","mongodb+srv://knight4563:knight4563@cluster0.a5br0se.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+API_HASH = os.getenv("API_HASH","da038362f56272bae92f22ece39e73e1")
+API_ID = os.getenv("API_ID","24472937")
 if not TOKEN or not mongo_url or not API_HASH or not API_ID:
     raise ValueError("Please set the environment variables: TOKEN, MONGO_URL, API_HASH, and API_ID.")
 
 
 word = Client(
     "lol",
-    api_id=24472937,
-    api_hash=da038362f56272bae92f22ece39e73e1,
+    api_id="24472937",
+    api_hash="da038362f56272bae92f22ece39e73e1",
     bot_token="7564541101:AAGeeiFMZEh1irUh7d8sl68XsuAG29fzoKE",
     plugins=dict(root="word"),
 )
