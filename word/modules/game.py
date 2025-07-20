@@ -232,4 +232,4 @@ async def show_stats(client, message: Message):
     stats = await get_stats(message.from_user.id)
 
     games_played = stats.get('games_played', 0)
-    games_won = stats.get('games_won', 0
+    games_won = stats.get('games_won', 0)
